@@ -20,7 +20,11 @@ namespace StringCalculator
                 string currInput = Console.ReadLine();
                 if (currInput == "")
                 {
-                    if (input.Contains("\n"))
+                    if (Regex.Matches(input, "\n").Count > 1)
+                    {
+                        input = input.Remove(input.LastIndexOf("\n"));
+                    }
+                    else if (input.Contains("\n") && input[0] != '/' && input[1] != '/')
                     {
                         input = input.Remove(input.LastIndexOf("\n"));
                     }
@@ -33,11 +37,6 @@ namespace StringCalculator
             } while (true);
 
             var addClass = new AddClass();
-            /*
-            Console.WriteLine("---- Begin Debug -------");
-            Console.WriteLine("Test: " + addClass.Add("1\n2, 3"));
-            Console.WriteLine("---- End Debug -------");
-            */
             int sum = addClass.Add(input);
             Console.WriteLine("= " + sum + "\n" + "Press \"Enter\" to escape.");
             Console.ReadLine();
@@ -51,7 +50,7 @@ namespace StringCalculator
             if (input.Contains(@"//") && input[0] == '/' && input[1] == '/')
             {
                 Match delimLine = Regex.Match(input, @"(?<=//)(.*?)(?=\\n)");
-                string delimRule = delimLine.ToString();
+                string delimRule = delimLine.ToString().Replace(@"\ ", @"\s");
 
                 // Regex for expressions between brackets, does not consider nested brackets
                 if (delimRule != "")
@@ -82,6 +81,21 @@ namespace StringCalculator
             // Create string array of delimiters that were inputted
             string[] delimIn = delimInList.ToArray();
 
+            // Default Delimiters
+            string[] delimDefault = new string[] { ",", @"\\n" };
+
+            // Concatenate the default delimiter array and the inputted delimiter array
+            string[] delimAll = new string[delimDefault.Length + delimIn.Length];
+            delimDefault.CopyTo(delimAll, 0);
+            delimIn.CopyTo(delimAll, delimDefault.Length);
+
+            // Substitute all delimiters with comma for easier split later
+            string delimPattern = String.Join("|", delimAll);
+
+            input = input.Replace(@"\ ", @"\s"); //Substituted spaces in input with escaped space
+            string numberStrReplace = Regex.Replace(input, delimPattern, ",");
+            string numberStrTrim = numberStrReplace.Replace(@"\s", ""); // Trim space characters if it's not a delimiter
+
             // Find all the negatives in the inputted string
             MatchCollection isThereNegative = Regex.Matches(input, @"-\d+");
             var negativeList = new string[isThereNegative.Count];
@@ -102,24 +116,8 @@ namespace StringCalculator
                 Console.WriteLine("negatives not allowed: " + String.Join(", ", negativeList));
             }
 
-            // Default Delimiters
-            string[] delimDefault = new string[] { ",", @"\\n" };
-
-            // Concatenate the default delimiter array and the inputted delimiter array
-            string[] delimAll = new string[delimDefault.Length + delimIn.Length];
-            delimDefault.CopyTo(delimAll, 0);
-            delimIn.CopyTo(delimAll, delimDefault.Length);
-
-            // Substitute all delimiters with comma for easier split later
-            string delimPattern = String.Join("|", delimAll);
-
-            input = input.Replace(@"\ ", @"\s"); //Space Delimiter
-            string numberStrReplace = Regex.Replace(input, delimPattern, ",");
-            string numberStrTrim = numberStrReplace.Replace(@"\s", ""); // Trim space characters if it's not a delimiter
 
             string[] stringList = numberStrTrim.Split(',');
-
-
             // Sum values of all legitimate entries
             int calcValue = 0;
 
