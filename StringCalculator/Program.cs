@@ -89,10 +89,10 @@ namespace StringCalculator
             delimDefault.CopyTo(delimAll, 0);
             delimIn.CopyTo(delimAll, delimDefault.Length);
 
-            // Substitute all delimiters with comma for easier split later
             string delimPattern = String.Join("|", delimAll);
 
             input = input.Replace(@"\ ", @"\s"); //Substituted spaces in input with escaped space
+            // Substitute all delimiters with comma for easier split later
             string numberStrReplace = Regex.Replace(input, delimPattern, ",");
             string numberStrTrim = numberStrReplace.Replace(@"\s", ""); // Trim space characters if it's not a delimiter
 
